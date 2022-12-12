@@ -16,6 +16,8 @@
 
 package lk.ac.mrt.cse.dbs.simpleexpensemanager.control;
 
+import android.content.Context;
+
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
@@ -28,6 +30,7 @@ import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.exception.InvalidAccountExcep
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Account;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.ExpenseType;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Transaction;
+import lk.ac.mrt.cse.dbs.simpleexpensemanager.ui.MainActivity;
 
 /**
  * The ExpenseManager acts as the mediator when performing transactions. This is an abstract class with an abstract
@@ -132,5 +135,5 @@ public abstract class ExpenseManager implements Serializable {
      * This method should be implemented by the concrete implementation of this class. It will dictate how the DAO
      * objects will be initialized.
      */
-    public abstract void setup() throws ExpenseManagerException;
+    public abstract void setup(Context context) throws ExpenseManagerException;
 }
