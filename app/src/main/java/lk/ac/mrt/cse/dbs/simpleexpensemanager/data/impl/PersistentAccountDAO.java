@@ -24,7 +24,6 @@ public class PersistentAccountDAO implements AccountDAO {
     @Override
     public List<String> getAccountNumbersList() {
 
-
         SQLiteDatabase sqLiteDatabase = dbHelper.getReadableDatabase();
         String query = "SELECT " + DatabaseHelper.AC_NO_COL + " FROM " + DatabaseHelper.TABLE1_NAME;
 
@@ -51,12 +50,10 @@ public class PersistentAccountDAO implements AccountDAO {
 
         if (cursor.moveToFirst()) {
             do {
-                String accountNo = cursor.getString(cursor.getColumnIndex(DatabaseHelper.AC_NO_COL));
-                String bankName = cursor.getString(cursor.getColumnIndex(DatabaseHelper.BANK_NAME_COL));
-                String accountHolderName = cursor.getString(cursor.getColumnIndex(DatabaseHelper.AC_HOLDER_COL));
-                double balance = cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.BALANCE_COL));
-
-                accounts.add(new Account(accountNo, bankName, accountHolderName, balance));
+                accounts.add(new Account(cursor.getString(cursor.getColumnIndex(DatabaseHelper.AC_NO_COL)),
+                        cursor.getString(cursor.getColumnIndex(DatabaseHelper.BANK_NAME_COL)),
+                        cursor.getString(cursor.getColumnIndex(DatabaseHelper.AC_HOLDER_COL)),
+                        cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.BALANCE_COL))));
             } while (cursor.moveToNext());
         }
         cursor.close();
@@ -74,9 +71,7 @@ public class PersistentAccountDAO implements AccountDAO {
 
         Cursor cursor = sqLiteDatabase.rawQuery(query, new String[]{accountNo});
 
-        if (!cursor.moveToFirst()) {
-            throw new InvalidAccountException(new String("Account " + accountNo + " is invalid."));
-        }
+        if (!cursor.moveToFirst()) { throw new InvalidAccountException(new String("Account " + accountNo + " is invalid.")); }
 
         Account account = new Account(accountNo, cursor.getString(cursor.getColumnIndex(DatabaseHelper.BANK_NAME_COL)),
                 cursor.getString(cursor.getColumnIndex(DatabaseHelper.AC_HOLDER_COL)),
@@ -105,8 +100,7 @@ public class PersistentAccountDAO implements AccountDAO {
     public void removeAccount(String accountNo) throws InvalidAccountException {
         SQLiteDatabase sqLiteDatabase = dbHelper.getWritableDatabase();
 
-        if ((sqLiteDatabase.delete(DatabaseHelper.TABLE1_NAME, DatabaseHelper.AC_NO_COL + " = ?",
-                new String[]{accountNo}))==0) {
+        if ((sqLiteDatabase.delete(DatabaseHelper.TABLE1_NAME, DatabaseHelper.AC_NO_COL + " = ?", new String[]{accountNo}))==0) {
             throw new InvalidAccountException(new String("Account " + accountNo + " is invalid."));
         }
         sqLiteDatabase.close();
@@ -120,9 +114,7 @@ public class PersistentAccountDAO implements AccountDAO {
 
         Cursor cursor = sqLiteDatabase.rawQuery(query, new String[]{accountNo});
 
-        if (!cursor.moveToFirst()) {
-            throw new InvalidAccountException(new String("Account " + accountNo + " is invalid."));
-        }
+        if (!cursor.moveToFirst()) { throw new InvalidAccountException(new String("Account " + accountNo + " is invalid.")); }
 
         double currentBal = cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.BALANCE_COL));
         cursor.close();
@@ -137,8 +129,7 @@ public class PersistentAccountDAO implements AccountDAO {
         ContentValues contentValues = new ContentValues();
         contentValues.put(DatabaseHelper.BALANCE_COL, currentBal);
 
-        sqLiteDatabase.update(DatabaseHelper.TABLE1_NAME, contentValues, DatabaseHelper.AC_NO_COL + " = ?",
-                new String[]{accountNo});
+        sqLiteDatabase.update(DatabaseHelper.TABLE1_NAME, contentValues, DatabaseHelper.AC_NO_COL + " = ?", new String[]{accountNo});
         sqLiteDatabase.close();
     }
 }

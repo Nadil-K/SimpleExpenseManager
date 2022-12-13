@@ -41,7 +41,7 @@ public class PersistentTransactionDAO implements TransactionDAO {
     @Override
     public List<Transaction> getAllTransactionLogs() {
 
-        List<Transaction> transactions = new ArrayList<>();
+        List<Transaction> transactionsList = new ArrayList<>();
         SQLiteDatabase sqLiteDatabase = dbHelper.getReadableDatabase();
         String query = "SELECT * FROM " + DatabaseHelper.TABLE2_NAME;
 
@@ -49,28 +49,46 @@ public class PersistentTransactionDAO implements TransactionDAO {
 
         if (cursor.moveToFirst()) {
             do {
-                String accountNo = cursor.getString(cursor.getColumnIndex(DatabaseHelper.AC_NO_COL));
-
                 Date date = null;
-                try {
-                    date = simpleDateFormat.parse(cursor.getString(cursor.getColumnIndex(DatabaseHelper.DATE_COL)));
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+                try { date = simpleDateFormat.parse(cursor.getString(cursor.getColumnIndex(DatabaseHelper.DATE_COL))); }
+                catch (ParseException e) { e.printStackTrace(); }
 
-                ExpenseType expenseType = cursor.getString(cursor.getColumnIndex(DatabaseHelper.EXP_TYPE_COL)).equals("INCOME") ? ExpenseType.INCOME : ExpenseType.EXPENSE;
-
-                transactions.add(new Transaction(date, accountNo, expenseType,  cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.AMOUNT_COL))));
+                transactionsList.add(new Transaction(date, cursor.getString(cursor.getColumnIndex(DatabaseHelper.AC_NO_COL)),
+                        cursor.getString(cursor.getColumnIndex(DatabaseHelper.EXP_TYPE_COL)).equals("INCOME") ? ExpenseType.INCOME : ExpenseType.EXPENSE,
+                        cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.AMOUNT_COL))));
 
             } while (cursor.moveToNext());
         }
         cursor.close();
         sqLiteDatabase.close();
 
-        return transactions;    }
+        return transactionsList;    }
 
     @Override
     public List<Transaction> getPaginatedTransactionLogs(int limit) {
-        return null;
+
+        List<Transaction> selectedTransactionsList = new ArrayList<>();
+        SQLiteDatabase sqLiteDatabase = dbHelper.getReadableDatabase();
+
+        String query = "SELECT * FROM " + DatabaseHelper.TABLE2_NAME + " ORDER BY " + DatabaseHelper.TRANS_ID_COL + " DESC LIMIT ?";
+
+        Cursor cursor = sqLiteDatabase.rawQuery(query, new String[]{String.valueOf(limit)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                Date date = null;
+                try { date = simpleDateFormat.parse(cursor.getString(cursor.getColumnIndex(DatabaseHelper.DATE_COL))); }
+                catch (ParseException e) { e.printStackTrace(); }
+
+                selectedTransactionsList.add(new Transaction(date, cursor.getString(cursor.getColumnIndex(DatabaseHelper.AC_NO_COL)),
+                        cursor.getString(cursor.getColumnIndex(DatabaseHelper.EXP_TYPE_COL)).equals("INCOME") ? ExpenseType.INCOME : ExpenseType.EXPENSE,
+                        cursor.getDouble(cursor.getColumnIndex(DatabaseHelper.AMOUNT_COL))));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        sqLiteDatabase.close();
+
+        return selectedTransactionsList;
+
     }
 }
